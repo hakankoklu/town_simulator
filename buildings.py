@@ -1,16 +1,14 @@
 from datetime import datetime
-from time import sleep
 
 
-men_number = 20
+worker_number = 20
 wood = 1200
 
 
 class WoodHouse:
 
-    wood_house_count = 0
     wood_houses = []
-    min_men_per_hour = 4
+    min_worker = 4
     cost = 500
     wood_per_min = 10
     max_storage = 50
@@ -26,8 +24,8 @@ class WoodHouse:
 
     def __init__(self):
         global men_number, wood
-        if men_number >= WoodHouse.min_men_per_hour and wood >= WoodHouse.cost:
-            men_number -= WoodHouse.min_men_per_hour
+        if men_number >= WoodHouse.min_worker and wood >= WoodHouse.cost:
+            men_number -= WoodHouse.min_worker
             wood -= WoodHouse.cost
             self.created_at = datetime.utcnow()
             self.last_emptied_at = datetime.utcnow()
@@ -58,14 +56,25 @@ def create_woodhouse():
     except Exception:
         print('Not enough resources!')
 
-wh1 = create_woodhouse()
-wh2 = create_woodhouse()
-wh3 = create_woodhouse()
 
-print('Current wood is {}, current wood in houses is {}'.format(str(wood), str(wh1.total_wood())))
-sleep(10)
-print('Current wood is {}, current wood in houses is {}'.format(str(wood), str(wh1.total_wood())))
-sleep(10)
-print('Current wood is {}, current wood in houses is {}'.format(str(wood), str(wh1.total_wood())))
-wh1.empty_all()
-print('Current wood is {}, current wood in houses is {}'.format(str(wood), str(wh1.total_wood())))
+def status_update():
+    wood_in_houses = WoodHouse.total_wood()
+    woodhouse_count = len(WoodHouse.wood_houses)
+    print('Working workers: {}'.format(str(WoodHouse.min_worker * woodhouse_count)))
+    print('Available worker: {}'.format(str(men_number)))
+    print('Number of woodhouses: {}'.format(str(woodhouse_count)))
+    print('Wood in storage: {}'.format(str(wood)))
+    print('Wood ready to be harvested: {}'.format(wood_in_houses))
+
+command_map = {'status': status_update,
+               'make_wh': create_woodhouse,
+               'empty_houses': WoodHouse.empty_all}
+
+while True:
+    command = input('--> ')
+    if command == 'qq':
+        break
+    elif command in command_map:
+        command_map[command]()
+    else:
+        print('Unknown command! Try again.')
