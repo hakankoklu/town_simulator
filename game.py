@@ -9,7 +9,6 @@ class Game:
     def __init__(self, username):
         self.username = username
         game_specs = data_service.get_game_specs(username)
-        self.worker_count = game_specs['worker_count']
         self.resources = game_specs['resources']
         self.buildings = []
 
@@ -20,7 +19,7 @@ class Game:
 
     @staticmethod
     def load_building(building_spec):
-        building_type = building_spec['type']
+        building_type = building_spec.pop('type')
         return building_map[building_type](**building_spec)
 
     def build_building(self, building_type):
@@ -30,3 +29,23 @@ class Game:
             self.buildings.append(building_class())
         else:
             print('Not enough resources!')
+
+    def has_resources(self, building_type):
+        for k, v in building_map[building_type].cost.items():
+            if self.resources[k] < v:
+                return False
+        return True
+
+    def update_resources(self, building_type):
+        for k, v in building_map[building_type].cost.items():
+            self.resources[k] -= v
+
+    def status_update(self):
+        resource_report = get
+        wood_in_houses = WoodHouse.total_wood()
+        woodhouse_count = len(WoodHouse.wood_houses)
+        print('Working workers: {}'.format(str(WoodHouse.min_worker * woodhouse_count)))
+        print('Available worker: {}'.format(str(men_number)))
+        print('Number of woodhouses: {}'.format(str(woodhouse_count)))
+        print('Wood in storage: {}'.format(str(wood)))
+        print('Wood ready to be harvested: {}'.format(wood_in_houses))
