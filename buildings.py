@@ -1,4 +1,5 @@
 from datetime import datetime
+from
 
 
 worker_number = 20
@@ -22,16 +23,10 @@ class WoodHouse:
         for wh in WoodHouse.wood_houses:
             wh.empty()
 
-    def __init__(self):
-        global men_number, wood
-        if men_number >= WoodHouse.min_worker and wood >= WoodHouse.cost:
-            men_number -= WoodHouse.min_worker
-            wood -= WoodHouse.cost
-            self.created_at = datetime.utcnow()
-            self.last_emptied_at = datetime.utcnow()
-            WoodHouse.wood_houses.append(self)
-        else:
-            raise Exception
+    def __init__(self, type=None, created_at=datetime.utcnow(), last_emptied_at=datetime.utcnow()):
+        self.created_at = created_at
+        self.last_emptied_at = last_emptied_at
+        WoodHouse.wood_houses.append(self)
 
     @property
     def current_storage(self):
@@ -49,14 +44,6 @@ class WoodHouse:
         return self.current_storage
 
 
-def create_woodhouse():
-    try:
-        wh1 = WoodHouse()
-        return wh1
-    except Exception:
-        print('Not enough resources!')
-
-
 def status_update():
     wood_in_houses = WoodHouse.total_wood()
     woodhouse_count = len(WoodHouse.wood_houses)
@@ -66,15 +53,25 @@ def status_update():
     print('Wood in storage: {}'.format(str(wood)))
     print('Wood ready to be harvested: {}'.format(wood_in_houses))
 
+
+def load_game(username):
+    print('Welcome {}!'.format(username))
+    while True:
+        command = input('--> ')
+        if command == 'qq':
+            break
+        elif command in command_map:
+            command_map[command]()
+        else:
+            print('Unknown command! Try again.')
+
 command_map = {'status': status_update,
                'make_wh': create_woodhouse,
                'empty_houses': WoodHouse.empty_all}
 
-while True:
-    command = input('--> ')
-    if command == 'qq':
-        break
-    elif command in command_map:
-        command_map[command]()
-    else:
-        print('Unknown command! Try again.')
+print('What is your username?')
+username = input('--> ')
+if check_user(username):
+    load_game(username)
+else:
+    new_game()
