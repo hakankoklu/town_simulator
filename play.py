@@ -1,10 +1,17 @@
 from game import Game
-from buildings import WoodHouse
+import data_service
+
+basic_resources = {'wood': 1200, 'worker': 20}
 
 
 def start_game(username):
     print('Welcome {}!'.format(username))
+    if not data_service.user_exists(username):
+        data_service.create_user(username, basic_resources)
     game1 = Game(username)
+    command_map = {'status': game1.status_update,
+                   'make_wh': lambda: game1.build_building('woodhouse'),
+                   'empty_houses': game1.empty_all}
     while True:
         command = input('--> ')
         if command == 'qq':
@@ -13,10 +20,6 @@ def start_game(username):
             command_map[command]()
         else:
             print('Unknown command! Try again.')
-
-command_map = {'status': status_update,
-               'make_wh': create_woodhouse,
-               'empty_houses': WoodHouse.empty_all}
 
 print('What is your username?')
 username = input('--> ')

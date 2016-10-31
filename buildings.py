@@ -19,22 +19,22 @@ class WoodHouse:
         for wh in WoodHouse.wood_houses:
             wh.empty()
 
-    def __init__(self, created_at=datetime.utcnow(), last_emptied_at=datetime.utcnow()):
+    def __init__(self, id, created_at=datetime.utcnow(), last_harvested=datetime.utcnow()):
+        self.id = id
         self.created_at = created_at
-        self.last_emptied_at = last_emptied_at
+        self.last_harvested = last_harvested
         WoodHouse.wood_houses.append(self)
 
     @property
     def current_storage(self):
-        return min(WoodHouse.max_storage,
-                   WoodHouse.wood_per_min*(datetime.utcnow() - self.last_emptied_at).seconds/60)
+        return int(min(WoodHouse.max_storage,
+                   WoodHouse.wood_per_min*(datetime.utcnow() - self.last_harvested).seconds/60))
 
     def empty(self):
-        global wood
         harvest = self.current_storage
-        self.last_emptied_at = datetime.utcnow()
-        wood += harvest
+        self.last_harvested = datetime.utcnow()
         print('{harvest} wood harvested'.format(harvest=str(harvest)))
+        return harvest
 
     def check_storage(self):
         return self.current_storage
