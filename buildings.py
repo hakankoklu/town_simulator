@@ -34,7 +34,7 @@ class WoodHouse:
         harvest = self.current_storage
         self.last_harvested = datetime.utcnow()
         print('{harvest} wood harvested'.format(harvest=str(harvest)))
-        return harvest
+        return harvest, self.last_harvested
 
     def check_storage(self):
         return self.current_storage

@@ -31,26 +31,23 @@ class Game:
     def build_building(self, building_type):
         building_class = building_map[building_type]
         if self.has_resources(building_type):
-            building_id = data_service.create_building(self.user_id, building_type)
-            self.update_resources_for_built(building_type)
+            building_id = data_service.build_building_with_resources(self.user_id, building_type,
+                                                                     building_class.cost)
+            self.apply_cost(building_class.cost)
             new_building_specs = data_service.get_one_building(building_id)
             self.buildings.append(building_class(**new_building_specs))
         else:
             print('Not enough resources!')
+
+    def apply_cost(self, cost):
+        for k, v in cost.items():
+            self.resources[k] -= v
 
     def has_resources(self, building_type):
         for k, v in building_map[building_type].cost.items():
             if self.resources[k] < v:
                 return False
         return True
-
-    def update_resources_for_built(self, building_type):
-        for k, v in building_map[building_type].cost.items():
-            self.update_resources(k, -1*v)
-
-    def update_resources(self, resource_type, amount):
-        data_service.update_resource(self.user_id, resource_type, amount)
-        self.resources[resource_type] += amount
 
     def status_update(self):
         resource_report = self.get_resource_report()
@@ -60,8 +57,14 @@ class Game:
 
     def empty_all(self):
         for building in self.buildings:
-            self.update_resources(building.produces, building.empty())
-            data_service.reset_building(building)
+            self.empty_building(building)
+
+    def empty_building(self, building):
+        harvest, harvest_time = building.empty()
+        resource_type = building.produces
+        self.resources[resource_type] += harvest
+        data_service.empty_building_and_update_resources(self.user_id, resource_type, harvest,
+                                                         building)
 
     def get_resource_report(self):
         rep = ''

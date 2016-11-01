@@ -9,9 +9,9 @@ def start_game(username):
     if not data_service.user_exists(username):
         data_service.create_user(username, basic_resources)
     game1 = Game(username)
-    command_map = {'status': game1.status_update,
-                   'make_wh': lambda: game1.build_building('woodhouse'),
-                   'empty_houses': game1.empty_all}
+    command_map = {'st': game1.status_update,
+                   'mw': lambda: game1.build_building('woodhouse'),
+                   'ew': game1.empty_all}
     while True:
         command = input('--> ')
         if command == 'qq':

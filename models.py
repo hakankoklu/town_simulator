@@ -1,4 +1,5 @@
 from datetime import datetime
+from contextlib import contextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import URL
@@ -9,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 import settings
 
 Base = declarative_base()
+Session = sessionmaker(bind=create_engine(URL(**settings.DATABASE)))
 
 
 def db_connect():
@@ -19,9 +21,18 @@ def db_connect():
     return create_engine(URL(**settings.DATABASE))
 
 
-def get_session():
-    session = sessionmaker(bind=db_connect())
-    return session()
+@contextmanager
+def session_scope():
+    """Provide a transactional scope around a series of operations."""
+    session = Session()
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 class GameUser(Base):
@@ -29,7 +40,7 @@ class GameUser(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column('username', String, unique=True, nullable=False)
-    user_created = Column('user_created', DateTime, default=datetime.utcnow())
+    user_created = Column('user_created', DateTime, default=datetime.utcnow)
 
 
 class Resource(Base):
@@ -48,8 +59,8 @@ class Building(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column('user_id', Integer, ForeignKey('game_user.id'), nullable=False)
     building_type = Column('building_type', String, nullable=False)
-    created_at = Column('created_at', DateTime, default=datetime.utcnow())
-    last_harvested = Column('last_harvested', DateTime, default=datetime.utcnow())
+    created_at = Column('created_at', DateTime, default=datetime.utcnow)
+    last_harvested = Column('last_harvested', DateTime, default=datetime.utcnow)
 
 
 Base.metadata.create_all(db_connect())
