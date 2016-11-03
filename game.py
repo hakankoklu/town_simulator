@@ -1,8 +1,6 @@
-from buildings import WoodHouse
+from buildings import Building
 import data_service
-
-
-building_map = {'woodhouse': WoodHouse}
+from config import BUILDING_CONFIG
 
 
 class Game:
@@ -25,17 +23,16 @@ class Game:
 
     @staticmethod
     def load_building(building_spec):
-        building_type = building_spec.pop('building_type')
-        return building_map[building_type](**building_spec)
+
+        return Building(**building_spec)
 
     def build_building(self, building_type):
-        building_class = building_map[building_type]
         if self.has_resources(building_type):
-            building_id = data_service.build_building_with_resources(self.user_id, building_type,
-                                                                     building_class.cost)
-            self.apply_cost(building_class.cost)
+            building_id = data_service.build_building_with_resources(
+                self.user_id, building_type, BUILDING_CONFIG[building_type]['cost'])
+            self.apply_cost(BUILDING_CONFIG[building_type]['cost'])
             new_building_specs = data_service.get_one_building(building_id)
-            self.buildings.append(building_class(**new_building_specs))
+            self.buildings.append(Building(**new_building_specs))
         else:
             print('Not enough resources!')
 
@@ -44,7 +41,7 @@ class Game:
             self.resources[k] -= v
 
     def has_resources(self, building_type):
-        for k, v in building_map[building_type].cost.items():
+        for k, v in BUILDING_CONFIG[building_type]['cost'].items():
             if self.resources[k] < v:
                 return False
         return True
@@ -61,7 +58,7 @@ class Game:
 
     def empty_building(self, building):
         harvest, harvest_time = building.empty()
-        resource_type = building.produces
+        resource_type = building.properties['produces']
         self.resources[resource_type] += harvest
         data_service.empty_building_and_update_resources(self.user_id, resource_type, harvest,
                                                          building)
@@ -75,6 +72,8 @@ class Game:
     def get_building_report(self):
         rep = ''
         for building in self.buildings:
-            rep += '{} count in building {}: {}\n'.format(building.produces, str(building.id),
-                                                          str(building.check_storage()))
+            rep += '{produce} count in {name} {b_id}: {count}\n'.format(
+                produce=building.properties['produces'], name=building.properties['name'],
+                b_id=str(building.id),
+                count=str(building.check_storage()))
         return rep

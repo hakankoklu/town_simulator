@@ -58,6 +58,7 @@ def _get_building_by_id(sess, building_id):
     if sess.query(exists().where(Building.id == building_id)).scalar():
         building = sess.query(Building).filter(Building.id == building_id).one()
         result = {'id': building.id,
+                  'building_type': building.building_type,
                   'created_at': building.created_at,
                   'last_harvested': building.last_harvested}
     return result
