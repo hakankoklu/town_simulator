@@ -59,8 +59,11 @@ class Building(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column('user_id', Integer, ForeignKey('game_user.id'), nullable=False)
     building_type = Column('building_type', String, nullable=False)
+    storage_capacity = Column('storage_capacity', Integer, nullable=False)
+    production_capacity = Column('production_capacity', Integer, nullable=False)
     created_at = Column('created_at', DateTime, default=datetime.utcnow)
-    last_harvested = Column('last_harvested', DateTime, default=datetime.utcnow)
-
+    last_harvested_at = Column('last_harvested_at', DateTime, default=datetime.utcnow)
+    last_upgraded_at = Column('last_upgraded_at', DateTime, default=datetime.utcnow)
+    UniqueConstraint(user_id, building_type)
 
 Base.metadata.create_all(db_connect())

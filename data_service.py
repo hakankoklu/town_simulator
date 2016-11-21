@@ -3,6 +3,8 @@ from models import Building, GameUser, Resource
 
 from sqlalchemy import exists, and_
 
+import config
+
 
 def get_stored_resources(user_id):
     with session_scope() as sess:
@@ -103,13 +105,29 @@ def _check_if_exists(sess, user_id, klass):
     return sess.query(exists().where(klass.user_id == user_id)).scalar()
 
 
-def create_user(sess, username, basic_resources):
+def create_user(username, buildings, resources):
+    with session_scope() as sess:
+        _create_user(sess, username, buildings, resources)
+
+
+def _create_user(sess, username, buildings, resources):
     new_user = GameUser(username=username)
     sess.add(new_user)
     sess.flush()
-    for resource, amount in basic_resources.items():
+    for resource, amount in resources.items():
         new_resource = Resource(user_id=new_user.id, resource_type=resource, amount=amount)
         sess.add(new_resource)
+    for building in buildings:
+        new_building = get_building_with_specs(new_user.id, building,
+                                               config.BUILDING_CONFIG[building])
+        sess.add(new_building)
+
+
+def get_building_with_specs(user_id, building_type, specs):
+    return Building(user_id=user_id,
+                    building_type=building_type,
+                    storage_capacity=specs.get('initial_capacity', 0),
+                    production_capacity=specs.get('initial_production', 0))
 
 
 def _reset_building(sess, building):
